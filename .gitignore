@@ -1,3 +1,2 @@
-*
-!logiccalc.c
-!.gitignore
+/.vscode/
+logiccalc
