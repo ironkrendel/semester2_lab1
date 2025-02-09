@@ -1,15 +1,15 @@
-CC := gcc
+CC := g++
 CFLAGS := -O2 -Wall -Wextra
-SOURCES := ./source/*.c
+SOURCES := ./source/*.cpp
 LDFLAGS := -I./include/
 
-logiccalc: logiccalc.c $(SOURCES)
+logiccalc: logiccalc.cpp $(SOURCES)
 	$(CC) $(CFLAGS) $< $(SOURCES) -o $@ $(LDFLAGS)
 
 .PHONY: test clean
 
-test:
-	./logiccalc "!(!5<5->5<=5)>5"
+test: logiccalc
+	./logiccalc "5 <> 6"
 
 clean:
 	rm -f ./logiccalc
