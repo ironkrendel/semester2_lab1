@@ -1,11 +1,7 @@
-#include <stdio.h>
-#include <errno.h>
-#include <stdlib.h>
-
 #include <tetostack.hpp>
 #include <logiccalclib.hpp>
 
-char OP_PRIORITIES[125];
+#include <iostream>
 
 Teto::TetoStack<int> stack;
 
@@ -16,8 +12,6 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    lcl::populateOpPriorities(OP_PRIORITIES);
-
     std::string str = lcl::prepareString(argv[1]);
 
     std::cout << str << std::endl;
@@ -27,6 +21,19 @@ int main(int argc, char** argv) {
     str = lcl::padOperators(str);
 
     std::cout << str << std::endl;
+
+    str = lcl::convertToPostfix(str);
+
+    std::cout << str << std::endl;
+
+    bool result = lcl::calculatePostfix(str);
+
+    if (result) {
+        std::cout << "true" << std::endl;
+    }
+    else {
+        std::cout << "false" << std::endl;
+    }
 
     return 0;
 }

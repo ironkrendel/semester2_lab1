@@ -9,7 +9,7 @@ logiccalc: logiccalc.cpp $(SOURCES)
 .PHONY: test clean
 
 test: logiccalc
-	./logiccalc "5 <> 6"
+	./logiccalc "5 < (6<77) || True"
 
 clean:
 	rm -f ./logiccalc

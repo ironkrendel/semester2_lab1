@@ -40,6 +40,8 @@ namespace lcl {
             SYM_OP_IMPLICATION,
             SYM_OP_NOT,
             SYM_DIGIT,
+            SYM_BRACKET_OPEN,
+            SYM_BRACKET_CLOSE,
         };
     };
 
@@ -63,6 +65,8 @@ namespace lcl {
 
     unsigned char symCharToId(unsigned char sym);
 
+    unsigned char symIdToChar(unsigned char id);
+
     std::string pretifyString(std::string string);
 
     std::string prepareString(std::string string);
@@ -70,6 +74,10 @@ namespace lcl {
     void checkString(std::string string);
 
     std::string padOperators(std::string string);
+
+    std::string convertToPostfix(std::string string);
+
+    bool calculatePostfix(std::string string);
 
     void populateOpPriorities(char* priorities);
 };

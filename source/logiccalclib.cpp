@@ -1,4 +1,5 @@
 #include <logiccalclib.hpp>
+#include <tetostack.hpp>
 
 void lcl::printErrorMsg(std::string msg) {
     std::cout << ANSI_COLOR_BRIGHT_RED << msg << ANSI_COLOR_RESET << std::endl;
@@ -137,7 +138,29 @@ unsigned char lcl::symCharToId(unsigned char sym) {
     if (sym == lcl::SYMS::SYM_OP_NOT) return lcl::SYMS_ID::SYM_OP_NOT;
     if (sym == lcl::SYMS::SYM_OP_IMPLICATION) return lcl::SYMS_ID::SYM_OP_IMPLICATION;
     if (isdigit(sym)) return lcl::SYMS_ID::SYM_DIGIT;
+    if (sym == '(') return lcl::SYMS_ID::SYM_BRACKET_OPEN;
+    if (sym == ')') return lcl::SYMS_ID::SYM_BRACKET_CLOSE;
     lcl::printErrorMsg("Unknown character passed into symCharToId - " + sym);
+    exit(1);
+}
+
+unsigned char lcl::symIdToChar(unsigned char id) {
+    if (id == lcl::SYMS_ID::SYM_TRUE) return lcl::SYMS::SYM_TRUE;
+    if (id == lcl::SYMS_ID::SYM_FALSE) return lcl::SYMS::SYM_FALSE;
+    if (id == lcl::SYMS_ID::SYM_OP_LESS) return lcl::SYMS::SYM_OP_LESS;
+    if (id == lcl::SYMS_ID::SYM_OP_LESS_EQUAL) return lcl::SYMS::SYM_OP_LESS_EQUAL;
+    if (id == lcl::SYMS_ID::SYM_OP_MORE) return lcl::SYMS::SYM_OP_MORE;
+    if (id == lcl::SYMS_ID::SYM_OP_MORE_EQUAL) return lcl::SYMS::SYM_OP_MORE_EQUAL;
+    if (id == lcl::SYMS_ID::SYM_OP_EQUAL) return lcl::SYMS::SYM_OP_EQUAL;
+    if (id == lcl::SYMS_ID::SYM_OP_NOT_EQUAL) return lcl::SYMS::SYM_OP_NOT_EQUAL;
+    if (id == lcl::SYMS_ID::SYM_OP_AND) return lcl::SYMS::SYM_OP_AND;
+    if (id == lcl::SYMS_ID::SYM_OP_OR) return lcl::SYMS::SYM_OP_OR;
+    if (id == lcl::SYMS_ID::SYM_OP_XOR) return lcl::SYMS::SYM_OP_XOR;
+    if (id == lcl::SYMS_ID::SYM_OP_NOT) return lcl::SYMS::SYM_OP_NOT;
+    if (id == lcl::SYMS_ID::SYM_OP_IMPLICATION) return lcl::SYMS::SYM_OP_IMPLICATION;
+    if (id == lcl::SYMS_ID::SYM_BRACKET_OPEN) return '(';
+    if (id == lcl::SYMS_ID::SYM_BRACKET_CLOSE) return ')';
+    lcl::printErrorMsg("Unknown id passed into symIdToSym - " + id);
     exit(1);
 }
 
@@ -181,23 +204,43 @@ std::string lcl::pretifyString(std::string string) {
 }
 
 void lcl::checkString(std::string string) {
+    int bracket_balance = 0;
+    if (string[0] == '(') bracket_balance++;
+    if (string[0] == ')') {
+        printErrorMsg("Bad input encountered!");
+        std::string pString = pretifyString(string);
+        for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
+        std::cout << std::endl << pString << std::endl;
+        std::cout << ANSI_COLOR_BRIGHT_RED << "^" << ANSI_COLOR_RESET << std::endl;
+        for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
+        std::cout << ANSI_COLOR_RESET << std::endl;
+        exit(1);
+    }
+
     for (std::size_t i = 1;i < string.length();i++) {
         unsigned char lsym = symCharToId(string[i - 1]);
         unsigned char rsym = symCharToId(string[i]);
 
-        bool lbool = (lsym <= 1);
-        bool lcomp = (lsym >= 2) && (lsym <= 7);
-        bool lop = (lsym >= 8) && (lsym <= 10);
-        bool lnot = (lsym == 12);
-        bool ldigit = (lsym == 13);
+        if (string[i] == '(') bracket_balance++;
+        if (string[i] == ')') bracket_balance--;
 
-        bool rbool = (rsym <= 1);
-        bool rcomp = (rsym >= 2) && (rsym <= 7);
-        bool rop = (rsym >= 8) && (rsym <= 10);
-        bool rnot = (rsym == 12);
-        bool rdigit = (rsym == 13);
+        bool lbool = (lsym <= lcl::SYMS_ID::SYM_FALSE);
+        bool lcomp = (lsym >= lcl::SYMS_ID::SYM_OP_LESS) && (lsym <= lcl::SYMS_ID::SYM_OP_NOT_EQUAL);
+        bool lop = (lsym >= lcl::SYMS_ID::SYM_OP_AND) && (lsym <= lcl::SYMS_ID::SYM_OP_IMPLICATION);
+        bool lnot = (lsym == lcl::SYMS_ID::SYM_OP_NOT);
+        bool ldigit = (lsym == lcl::SYMS_ID::SYM_DIGIT);
+        bool lbracketopen = (lsym == lcl::SYMS_ID::SYM_BRACKET_OPEN);
+        bool lbracketclose = (lsym == lcl::SYMS_ID::SYM_BRACKET_CLOSE);
 
-        if (lcomp && rcomp) {
+        bool rbool = (rsym <= lcl::SYMS_ID::SYM_FALSE);
+        bool rcomp = (rsym >= lcl::SYMS_ID::SYM_OP_LESS) && (rsym <= lcl::SYMS_ID::SYM_OP_NOT_EQUAL);
+        bool rop = (rsym >= lcl::SYMS_ID::SYM_OP_AND) && (rsym <= lcl::SYMS_ID::SYM_OP_IMPLICATION);
+        bool rnot = (rsym == lcl::SYMS_ID::SYM_OP_NOT);
+        bool rdigit = (rsym == lcl::SYMS_ID::SYM_DIGIT);
+        bool rbracketopen = (rsym == lcl::SYMS_ID::SYM_BRACKET_OPEN);
+        bool rbracketclose = (rsym == lcl::SYMS_ID::SYM_BRACKET_CLOSE);
+
+        if ((lcomp && rcomp) || (ldigit && rnot) || (bracket_balance < 0) || (ldigit && rbracketopen) || (lbracketclose && rdigit) || ((lop || lcomp || lnot) && rbracketclose)) {
             printErrorMsg("Bad input encountered!");
             std::string pString = pretifyString(string);
             for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
@@ -219,6 +262,21 @@ void lcl::checkString(std::string string) {
             std::cout << ANSI_COLOR_RESET << std::endl;
             exit(1);
         }
+    }
+
+    if (bracket_balance != 0) {
+        printErrorMsg("Reached the end of string, but not all brackets were closed!");
+        std::string pString = pretifyString(string);
+        for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
+        std::cout << std::endl << pString << std::endl;
+
+        std::size_t offset = pString.length() - 1;
+        for (unsigned int _ = 0;_ < offset;_++) std::cout << " ";
+        std::cout << ANSI_COLOR_BRIGHT_RED << "^" << ANSI_COLOR_RESET << std::endl;
+
+        for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
+        std::cout << ANSI_COLOR_RESET << std::endl;
+        exit(1);
     }
 }
 
@@ -250,16 +308,147 @@ std::string lcl::padOperators(std::string string) {
     return newString;
 }
 
+std::string lcl::convertToPostfix(std::string string) {
+    std::string result;
+    Teto::TetoStack<int> stack;
+    char OP_PRIORITIES[lcl::SYMS_ID::SYM_DIGIT];
+
+    populateOpPriorities(OP_PRIORITIES);
+
+    int digitBuffer = 0;
+    for (std::size_t i = 0;i < string.length();i++) {
+        if (string[i] == ' ') {
+            if (digitBuffer != 0) {
+                result.append(std::to_string(digitBuffer));
+                digitBuffer = 0;
+                result.push_back(' ');
+            }
+
+            continue;
+        }
+
+        unsigned char symId = symCharToId(string[i]);
+
+        bool sbool = (symId <= lcl::SYMS_ID::SYM_FALSE);
+        bool scomp = (symId >= lcl::SYMS_ID::SYM_OP_LESS) && (symId <= lcl::SYMS_ID::SYM_OP_NOT_EQUAL);
+        bool sop = (symId >= lcl::SYMS_ID::SYM_OP_AND) && (symId <= lcl::SYMS_ID::SYM_OP_IMPLICATION);
+        bool snot = (symId == lcl::SYMS_ID::SYM_OP_NOT);
+        bool sdigit = (symId == lcl::SYMS_ID::SYM_DIGIT);
+        bool sbracketopen = (symId == lcl::SYMS_ID::SYM_BRACKET_OPEN);
+        bool sbracketclose = (symId == lcl::SYMS_ID::SYM_BRACKET_CLOSE);
+
+        if (sdigit) {
+            digitBuffer *= 10;
+            digitBuffer += string[i] - '0';
+        }
+        else if (scomp || sop) {
+            while (!stack.isEmpty() && OP_PRIORITIES[stack.getTop()] > OP_PRIORITIES[symId]) {
+                result.push_back(symIdToChar(stack.pop()));
+                result.push_back(' ');
+            }
+            stack.push(symId);
+        }
+        else if (sbracketopen) {
+            stack.push(symId);
+        }
+        else if (sbracketclose) {
+            while (!stack.isEmpty() && stack.getTop() != lcl::SYMS_ID::SYM_BRACKET_OPEN) {
+                result.push_back(symIdToChar(stack.pop()));
+                result.push_back(' ');
+            }
+            stack.pop();
+        }
+        else if (sbool) {
+            if (symId == lcl::SYMS_ID::SYM_TRUE) {
+                result.push_back('T');
+                result.push_back(' ');
+            }
+            else if (symId == lcl::SYMS_ID::SYM_FALSE) {
+                result.push_back('F');
+                result.push_back(' ');
+            }
+        }
+    }
+
+    if (digitBuffer != 0) {
+        result.append(std::to_string(digitBuffer));
+        digitBuffer = 0;
+        result.push_back(' ');
+    }
+
+    while (!stack.isEmpty()) {
+        result.push_back(symIdToChar(stack.pop()));
+        result.push_back(' ');
+    }
+
+    return result;
+}
+
+bool lcl::calculatePostfix(std::string string) {
+    Teto::TetoStack<int> stack;
+    char OP_PRIORITIES[lcl::SYMS_ID::SYM_DIGIT];
+
+    populateOpPriorities(OP_PRIORITIES);
+
+    int digitBuffer = 0;
+    for (std::size_t i = 0;i < string.length();i++) {
+        if (string[i] == ' ') {
+            if (digitBuffer != 0) {
+                stack.push(digitBuffer);
+                digitBuffer = 0;
+            }
+
+            continue;
+        }
+
+        unsigned char symId = symCharToId(string[i]);
+
+        bool sbool = (symId <= lcl::SYMS_ID::SYM_FALSE);
+        bool scomp = (symId >= lcl::SYMS_ID::SYM_OP_LESS) && (symId <= lcl::SYMS_ID::SYM_OP_NOT_EQUAL);
+        bool sop = (symId >= lcl::SYMS_ID::SYM_OP_AND) && (symId <= lcl::SYMS_ID::SYM_OP_IMPLICATION);
+        bool snot = (symId == lcl::SYMS_ID::SYM_OP_NOT);
+        bool sdigit = (symId == lcl::SYMS_ID::SYM_DIGIT);
+        bool sbracketopen = (symId == lcl::SYMS_ID::SYM_BRACKET_OPEN);
+        bool sbracketclose = (symId == lcl::SYMS_ID::SYM_BRACKET_CLOSE);
+
+        if (sdigit) {
+            digitBuffer *= 10;
+            digitBuffer += string[i] - '0';
+        }
+        else if (sbool) {
+            if (symId == lcl::SYMS_ID::SYM_TRUE) {
+                stack.push(1);
+            }
+            else if (symId == lcl::SYMS_ID::SYM_FALSE) {
+                stack.push(0);
+            }
+        }
+        else {
+            int right = stack.pop();
+            int left = stack.pop();
+            int result = 0;
+
+            stack.push(result);
+        }
+    }
+
+    int result = stack.pop();
+
+    std::cout << result << std::endl;;
+
+    return static_cast<bool>(result);
+}
+
 void lcl::populateOpPriorities(char* priorities) {
-    priorities[lcl::SYMS::SYM_OP_LESS] = 1;
-    priorities[lcl::SYMS::SYM_OP_LESS_EQUAL] = 1;
-    priorities[lcl::SYMS::SYM_OP_MORE] = 1;
-    priorities[lcl::SYMS::SYM_OP_MORE_EQUAL] = 1;
-    priorities[lcl::SYMS::SYM_OP_EQUAL] = 1;
-    priorities[lcl::SYMS::SYM_OP_NOT_EQUAL] = 1;
-    priorities[lcl::SYMS::SYM_OP_AND] = 9;
-    priorities[lcl::SYMS::SYM_OP_OR] = 8;
-    priorities[lcl::SYMS::SYM_OP_XOR] = 8;
-    priorities[lcl::SYMS::SYM_OP_NOT] = 10;
-    priorities[lcl::SYMS::SYM_OP_IMPLICATION] = 7;
+    priorities[lcl::SYMS_ID::SYM_OP_LESS] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_LESS_EQUAL] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_MORE] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_MORE_EQUAL] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_EQUAL] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_NOT_EQUAL] = 11;
+    priorities[lcl::SYMS_ID::SYM_OP_AND] = 9;
+    priorities[lcl::SYMS_ID::SYM_OP_OR] = 8;
+    priorities[lcl::SYMS_ID::SYM_OP_XOR] = 8;
+    priorities[lcl::SYMS_ID::SYM_OP_NOT] = 10;
+    priorities[lcl::SYMS_ID::SYM_OP_IMPLICATION] = 7;
 }
