@@ -21,17 +21,17 @@ int main(int argc, char** argv) {
 
             std::string str = lcl::prepareString(argv[i]);
 
-            // std::cout << str << std::endl;
+            std::cout << str << std::endl;
 
             lcl::checkString(str);
 
             str = lcl::padOperators(str);
 
-            // std::cout << str << std::endl;
+            std::cout << str << std::endl;
 
             str = lcl::convertToPostfix(str);
 
-            // std::cout << str << std::endl;
+            std::cout << str << std::endl;
 
             bool result = lcl::calculatePostfix(str);
 
