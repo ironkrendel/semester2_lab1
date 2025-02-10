@@ -112,7 +112,8 @@ std::string lcl::prepareString(std::string string) {
             std::cout << ANSI_COLOR_BRIGHT_RED << "^" << ANSI_COLOR_RESET << std::endl;
             for (unsigned int _ = 0;_ < string_length;_++) std::cout << "-";
             std::cout << ANSI_COLOR_RESET << std::endl;
-            exit(1);
+            // exit(1);
+            throw std::runtime_error("");
         }
         index++;
     }
@@ -141,7 +142,8 @@ unsigned char lcl::symCharToId(unsigned char sym) {
     if (sym == '(') return lcl::SYMS_ID::SYM_BRACKET_OPEN;
     if (sym == ')') return lcl::SYMS_ID::SYM_BRACKET_CLOSE;
     lcl::printErrorMsg("Unknown character passed into symCharToId - " + sym);
-    exit(1);
+    // exit(1);
+    throw std::runtime_error("");
 }
 
 unsigned char lcl::symIdToChar(unsigned char id) {
@@ -161,7 +163,8 @@ unsigned char lcl::symIdToChar(unsigned char id) {
     if (id == lcl::SYMS_ID::SYM_BRACKET_OPEN) return '(';
     if (id == lcl::SYMS_ID::SYM_BRACKET_CLOSE) return ')';
     lcl::printErrorMsg("Unknown id passed into symIdToSym - " + id);
-    exit(1);
+    // exit(1);
+    throw std::runtime_error("");
 }
 
 std::string lcl::pretifyString(std::string string) {
@@ -214,7 +217,8 @@ void lcl::checkString(std::string string) {
         std::cout << ANSI_COLOR_BRIGHT_RED << "^" << ANSI_COLOR_RESET << std::endl;
         for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
         std::cout << ANSI_COLOR_RESET << std::endl;
-        exit(1);
+        // exit(1);
+        throw std::runtime_error("");
     }
 
     for (std::size_t i = 1;i < string.length();i++) {
@@ -240,7 +244,9 @@ void lcl::checkString(std::string string) {
         bool rbracketopen = (rsym == lcl::SYMS_ID::SYM_BRACKET_OPEN);
         bool rbracketclose = (rsym == lcl::SYMS_ID::SYM_BRACKET_CLOSE);
 
-        if ((lcomp && rcomp) || (ldigit && rnot) || (bracket_balance < 0) || (ldigit && rbracketopen) || (lbracketclose && rdigit) || ((lop || lcomp || lnot) && rbracketclose)) {
+        if (((lcomp || lop || lnot) && (rcomp || rop)) || (ldigit && rnot) || (bracket_balance < 0) || (ldigit && rbracketopen)\
+        || (lbracketclose && rdigit) || ((lop || lcomp || lnot) && rbracketclose)\
+        || ((lop || lcomp) && rdigit && i == 1) || ((rop || rcomp) && ldigit && i == string.length() - 1)) {
             printErrorMsg("Bad input encountered!");
             std::string pString = pretifyString(string);
             for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
@@ -260,7 +266,8 @@ void lcl::checkString(std::string string) {
 
             for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
             std::cout << ANSI_COLOR_RESET << std::endl;
-            exit(1);
+            // exit(1);
+            throw std::runtime_error("");
         }
     }
 
@@ -276,7 +283,8 @@ void lcl::checkString(std::string string) {
 
         for (unsigned int _ = 0;_ < pString.length();_++) std::cout << "-";
         std::cout << ANSI_COLOR_RESET << std::endl;
-        exit(1);
+        // exit(1);
+        throw std::runtime_error("");
     }
 }
 
@@ -318,7 +326,7 @@ std::string lcl::convertToPostfix(std::string string) {
     int digitBuffer = 0;
     for (std::size_t i = 0;i < string.length();i++) {
         if (string[i] == ' ') {
-            if (digitBuffer != 0) {
+            if (digitBuffer != 0 || isdigit(string[i - 1])) {
                 result.append(std::to_string(digitBuffer));
                 digitBuffer = 0;
                 result.push_back(' ');
@@ -341,7 +349,7 @@ std::string lcl::convertToPostfix(std::string string) {
             digitBuffer *= 10;
             digitBuffer += string[i] - '0';
         }
-        else if (scomp || sop) {
+        else if (scomp || sop || snot) {
             while (!stack.isEmpty() && OP_PRIORITIES[stack.getTop()] > OP_PRIORITIES[symId]) {
                 result.push_back(symIdToChar(stack.pop()));
                 result.push_back(' ');
@@ -370,7 +378,7 @@ std::string lcl::convertToPostfix(std::string string) {
         }
     }
 
-    if (digitBuffer != 0) {
+    if (digitBuffer != 0 || isdigit(string[string.length() - 1])) {
         result.append(std::to_string(digitBuffer));
         digitBuffer = 0;
         result.push_back(' ');
@@ -393,7 +401,7 @@ bool lcl::calculatePostfix(std::string string) {
     int digitBuffer = 0;
     for (std::size_t i = 0;i < string.length();i++) {
         if (string[i] == ' ') {
-            if (digitBuffer != 0) {
+            if (digitBuffer != 0 || isdigit(string[i - 1])) {
                 stack.push(digitBuffer);
                 digitBuffer = 0;
             }
@@ -423,18 +431,53 @@ bool lcl::calculatePostfix(std::string string) {
                 stack.push(0);
             }
         }
+        else if (snot) {
+            bool num = static_cast<bool>(stack.pop());
+            stack.push(static_cast<int>(!num));
+        }
         else {
             int right = stack.pop();
             int left = stack.pop();
-            int result = 0;
+            // int result = 0;
 
-            stack.push(result);
+            if (symId == lcl::SYMS_ID::SYM_OP_LESS) {
+                stack.push(static_cast<int>(left < right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_LESS_EQUAL) {
+                stack.push(static_cast<int>(left <= right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_MORE) {
+                stack.push(static_cast<int>(left > right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_MORE_EQUAL) {
+                stack.push(static_cast<int>(left >= right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_EQUAL) {
+                stack.push(static_cast<int>(left == right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_NOT_EQUAL) {
+                stack.push(static_cast<int>(left != right));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_AND) {
+                stack.push(static_cast<int>(static_cast<bool>(left) && static_cast<bool>(right)));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_OR) {
+                stack.push(static_cast<int>(static_cast<bool>(left) || static_cast<bool>(right)));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_XOR) {
+                stack.push(static_cast<int>(static_cast<bool>(left) != static_cast<bool>(right)));
+            }
+            else if (symId == lcl::SYMS_ID::SYM_OP_IMPLICATION) {
+                stack.push(static_cast<int>(!static_cast<bool>(left) || static_cast<bool>(right)));
+            }
+
+            // stack.push(result);
         }
     }
 
     int result = stack.pop();
 
-    std::cout << result << std::endl;;
+    // std::cout << result << std::endl;;
 
     return static_cast<bool>(result);
 }

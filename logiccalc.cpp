@@ -12,27 +12,39 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    std::string str = lcl::prepareString(argv[1]);
+    for (int i = 1;i < argc;i++) {
+        try {
+            if (strlen(argv[i]) <= 0) {
+                lcl::printErrorMsg("Error! String is empty!");
+                continue;
+            }
 
-    std::cout << str << std::endl;
+            std::string str = lcl::prepareString(argv[i]);
 
-    lcl::checkString(str);
+            // std::cout << str << std::endl;
 
-    str = lcl::padOperators(str);
+            lcl::checkString(str);
 
-    std::cout << str << std::endl;
+            str = lcl::padOperators(str);
 
-    str = lcl::convertToPostfix(str);
+            // std::cout << str << std::endl;
 
-    std::cout << str << std::endl;
+            str = lcl::convertToPostfix(str);
 
-    bool result = lcl::calculatePostfix(str);
+            // std::cout << str << std::endl;
 
-    if (result) {
-        std::cout << "true" << std::endl;
-    }
-    else {
-        std::cout << "false" << std::endl;
+            bool result = lcl::calculatePostfix(str);
+
+            if (result) {
+                std::cout << ANSI_COLOR_BRIGHT_GREEN << "true" << ANSI_COLOR_RESET << std::endl;
+            }
+            else {
+                std::cout << ANSI_COLOR_RED << "false" << ANSI_COLOR_RESET << std::endl;
+            }
+        }
+        catch (std::exception& e) {
+            continue;
+        }
     }
 
     return 0;

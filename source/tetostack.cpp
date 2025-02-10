@@ -21,7 +21,8 @@ template<>
 int Teto::TetoStack<int>::pop() {
     if (index <= 0) {
         lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! Pop called for empty stack!" ANSI_COLOR_RESET);
-        exit(1);
+        // exit(1);
+        throw std::runtime_error("");
     }
     return pData[--index];
 }
@@ -30,7 +31,8 @@ template<>
 int Teto::TetoStack<int>::getTop() {
     if (index <= 0) {
         lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! GetTop called for empty stack!" ANSI_COLOR_RESET);
-        exit(1);
+        // exit(1);
+        throw std::runtime_error("");
     }
     return pData[index - 1];
 }
@@ -39,7 +41,8 @@ template<>
 void Teto::TetoStack<int>::push(int value) {
     if (index >= size) {
         lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! Stack overflow!" ANSI_COLOR_RESET);
-        exit(1);
+        // exit(1);
+        throw std::runtime_error("");
     }
     pData[index++] = value;
 }
