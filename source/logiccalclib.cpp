@@ -356,12 +356,12 @@ void lcl::checkString(std::string str) {
         }
     }
     if (bracketVal != 0) {
-        printErrorMsg(std::to_string(bracketVal) + " bracket(s) were unclosed!");
+        printErrorMsg(std::to_string(bracketVal) + " bracket(s) was(were) unclosed!");
         printErrorPlace(str, bracketOpenings);
         throw std::runtime_error("");
     }
 
-    
+
 }
 
 void lcl::populateOpPriorities(char* priorities) {
