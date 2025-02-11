@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <optional>
+#include <vector>
 
 #include <tetostack.hpp>
 #include <colors.hpp>
@@ -25,6 +26,8 @@ namespace lcl {
             SYM_OP_XOR =         '^',  // 33
             SYM_OP_IMPLICATION = 'I',  // 73
             SYM_OP_NOT =         '!',  // 33
+            SYM_BRACKET_OPEN =   '(',
+            SYM_BRACKET_CLOSE =  ')',
         };
     };
 
@@ -53,11 +56,19 @@ namespace lcl {
 
     void printErrorMsg(std::string message);
 
+    void printErrorPlace(std::string message, std::size_t offset);
+
+    void printErrorPlace(std::string message, std::vector<std::size_t> offsets);
+
     unsigned char symCharToId(unsigned char sym);
 
     unsigned char symIdToChar(unsigned char id);
 
     Teto::TetoStack convertToPostfix(std::string str);
+
+    int calculatePostfix(Teto::TetoStack& stack);
+
+    void checkString(std::string str);
 
     void populateOpPriorities(char* priorities);
 };

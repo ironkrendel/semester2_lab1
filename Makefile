@@ -9,10 +9,10 @@ logiccalc: logiccalc.cpp $(SOURCES)
 .PHONY: test test_ops test_wrong_input clean
 
 test: logiccalc
-	./logiccalc "!  (T ==6)"
+	./logiccalc "(1 == 1) != 0"
 
 test_wrong_input: logiccalc
-	./logiccalc "((1)"
+	./logiccalc "((((1)"
 	./logiccalc "(1))"
 	./logiccalc "<55"
 	./logiccalc "55<"
@@ -26,11 +26,13 @@ test_ops: logiccalc
 	./logiccalc "1"
 	./logiccalc "5 < 6"
 	./logiccalc "6 < 5"
+	./logiccalc "6 < 6"
 	./logiccalc "5 <= 6"
 	./logiccalc "6 <= 6"
 	./logiccalc "6 <= 5"
 	./logiccalc "6 > 5"
 	./logiccalc "5 > 6"
+	./logiccalc "6 > 6"
 	./logiccalc "6 >= 5"
 	./logiccalc "6 >= 6"
 	./logiccalc "5 >= 6"

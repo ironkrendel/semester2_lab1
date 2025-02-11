@@ -19,27 +19,30 @@ int main(int argc, char** argv) {
 
             std::string str = argv[i];
 
-            std::cout << str << std::endl;
+            lcl::checkString(str);
 
             Teto::TetoStack postfix = lcl::convertToPostfix(str);
 
-            // std::cout << " " << postfix.getElementCount() << std::endl;
-            while (!postfix.isEmpty()) {
-                Teto::TetoElement elem = postfix.pop();
-                if (elem.isOp) {
-                    std::cout << elem.data.op << std::endl;
+            Teto::TetoStack copy = postfix;
+
+            while (!copy.isEmpty()) {
+                if (copy.getTop().isOp) {
+                    std::cout << copy.pop().data.op << " ";
                 }
                 else {
-                    std::cout << elem.data.value << std::endl;
+                    std::cout << copy.pop().data.value << " ";
                 }
             }
+            std::cout << std::endl;
 
-            // if (result) {
-            //     std::cout << ANSI_COLOR_BRIGHT_GREEN << "true" << ANSI_COLOR_RESET << std::endl;
-            // }
-            // else {
-            //     std::cout << ANSI_COLOR_RED << "false" << ANSI_COLOR_RESET << std::endl;
-            // }
+            int result = lcl::calculatePostfix(postfix);
+
+            if (result) {
+                std::cout << ANSI_COLOR_BRIGHT_GREEN "true" ANSI_COLOR_RESET << std::endl;
+            }
+            else {
+                std::cout << ANSI_COLOR_BRIGHT_RED "false" ANSI_COLOR_RESET << std::endl;
+            }
         }
         catch (std::exception& e) {
             continue;

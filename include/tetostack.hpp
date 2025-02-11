@@ -17,12 +17,13 @@ namespace Teto {
 
     class TetoStack {
     private:
-        TetoElement* pData;
-        std::size_t size;
+        TetoElement* pData = nullptr;
+        std::size_t size = TETO_DEFAULT_STACK_SIZE;
         std::size_t index = 0;
     public:
         TetoStack();
         TetoStack(std::size_t stack_size);
+        TetoStack(const Teto::TetoStack& src);
         ~TetoStack();
         TetoElement pop();
         TetoElement getTop();
@@ -31,5 +32,7 @@ namespace Teto {
         std::size_t getSize();
         std::size_t getElementCount();
         TetoElement* data();
+        TetoStack& operator=(const TetoStack& src) noexcept;
+        TetoStack& operator=(TetoStack&& src) noexcept;
     };
 };

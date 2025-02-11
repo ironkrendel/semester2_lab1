@@ -4,15 +4,37 @@
 Teto::TetoStack::TetoStack() {
     size = TETO_DEFAULT_STACK_SIZE;
     pData = new Teto::TetoElement[TETO_DEFAULT_STACK_SIZE];
+    // std::cout << "C " << pData << " " << size << std::endl;
 }
 
 Teto::TetoStack::TetoStack(std::size_t _size) {
     size = _size;
     pData = new Teto::TetoElement[_size];
+    // std::cout << "C " << pData << " " << size << std::endl;
+}
+
+Teto::TetoStack::TetoStack(const Teto::TetoStack& src) {
+    if (this == &src) return;
+
+    // if (pData != nullptr) {
+    //     delete[] pData;
+    // }
+    index = src.index;
+    size = src.size;
+    pData = new Teto::TetoElement[size];
+    // std::cout << pData << " - " << src.pData << " " << size << std::endl;
+    // std::cout << pData << std::endl;
+    // std::memcpy(pData, src.pData, size * sizeof(TetoElement));
+    std::copy(src.pData, src.pData + size - 1, pData);
+    // std::cout << pData[0].data.value << std::endl;
 }
 
 Teto::TetoStack::~TetoStack() {
-    delete[] pData;
+    // std::cout << pData << " " << size << std::endl;
+    if (pData != nullptr) {
+        delete[] pData;
+    }
+    pData = nullptr;
 }
 
 Teto::TetoElement Teto::TetoStack::pop() {
@@ -56,4 +78,24 @@ std::size_t Teto::TetoStack::getElementCount() {
 
 Teto::TetoElement* Teto::TetoStack::data() {
     return pData;
+}
+
+Teto::TetoStack& Teto::TetoStack::operator=(const Teto::TetoStack& src) noexcept {
+    if (this == &src) return *this;
+
+    std::cout << pData << " " << src.pData << std::endl;
+    if (pData != nullptr) {
+        delete[] pData;
+    }
+    index = src.index;
+    size = src.size;
+    pData = new Teto::TetoElement[size];
+    // std::cout << pData << std::endl;
+    std::copy(src.pData, src.pData + size - 1, pData);
+    // std::cout << pData[0].data.value << std::endl;
+    return *this;
+}
+
+Teto::TetoStack& Teto::TetoStack::operator=(Teto::TetoStack&& src) noexcept {
+    return *this;
 }

@@ -12,6 +12,37 @@ void lcl::printErrorMsg(const char* msg) {
     std::cout << ANSI_COLOR_BRIGHT_RED << msg << ANSI_COLOR_RESET << std::endl;
 }
 
+void lcl::printErrorPlace(std::string message, std::size_t offset) {
+    for (std::size_t _ = 0;_ < message.size();_++) std::cout << '-';
+    std::cout << std::endl;
+    std::cout << message << std::endl;
+    for (std::size_t _ = 0;_ < offset;_++) std::cout << ' ';
+    std::cout << ANSI_COLOR_RED "^" ANSI_COLOR_RESET << std::endl;
+    for (std::size_t _ = 0;_ < message.size();_++) std::cout << '-';
+    std::cout << std::endl;
+}
+
+void lcl::printErrorPlace(std::string message, std::vector<std::size_t> offsets) {
+    for (std::size_t _ = 0;_ < message.size();_++) std::cout << '-';
+    std::cout << std::endl;
+    std::cout << message << std::endl;
+    
+    int index = 0;
+    for (std::size_t i = 0;i < message.size() && index < offsets.size();i++) {
+        if (i == offsets[index]) {
+            std::cout << ANSI_COLOR_RED "^" ANSI_COLOR_RESET;
+            index++;
+        }
+        else {
+            std::cout << ' ';
+        }
+    }
+    std::cout << std::endl;
+
+    for (std::size_t _ = 0;_ < message.size();_++) std::cout << '-';
+    std::cout << std::endl;
+}
+
 unsigned char lcl::symCharToId(unsigned char sym) {
     if (sym == lcl::SYMS::SYM_TRUE) return lcl::SYMS_ID::SYM_TRUE;
     if (sym == lcl::SYMS::SYM_FALSE) return lcl::SYMS_ID::SYM_FALSE;
@@ -57,12 +88,14 @@ unsigned char lcl::symIdToChar(unsigned char id) {
 
 Teto::TetoStack lcl::convertToPostfix(std::string str) {
     Teto::TetoStack opStack;
-    Teto::TetoStack result;
+    Teto::TetoStack result(2000);
     std::optional<int> digitBuffer;
     int digitBufferModifier = 1;
+    char OP_PRIORITIES[125];
+    populateOpPriorities(OP_PRIORITIES);
 
-    for (int i = 0;i < str.length();i++) {
-        if (str[i] == '-' && isdigit(str[i + 1])) {
+    for (std::size_t i = 0;i < str.length();i++) {
+        if (str[i] == '-' && str[i + 1] != '>') {
             digitBufferModifier = -1;
         }
         else if (isdigit(str[i])) {
@@ -76,86 +109,259 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
         }
         else {
             if (digitBuffer.has_value()) {
-                Elem pushVal{false};
+                Elem pushVal;
+                pushVal.isOp = false;
                 pushVal.data.value = digitBuffer.value() * digitBufferModifier;
                 digitBufferModifier = 1;
                 digitBuffer.reset();
                 result.push(pushVal);
             }
             
-            Elem pushVal{true};
-            if (i + 4 < str.length()) {
-
+            Elem pushVal;
+            pushVal.isOp = true;
+            std::optional<unsigned char> op;
+            if (i + 4 < str.length()) 
+            {
+                char strSlice[5];
+                memcpy(strSlice, str.data() + i * sizeof(char), sizeof(char) * 5);
+                if (strcasecmp(strSlice, "false") == 0) {
+                    Elem _pushVal;
+                    _pushVal.isOp = false;
+                    if (digitBufferModifier == -1) {
+                        _pushVal.data.value = 1;
+                    }
+                    else {
+                        _pushVal.data.value = 0;
+                    }
+                    digitBufferModifier = 1;
+                    result.push(_pushVal);
+                    i += 4;
+                    continue;
+                }
             }
             if (i + 3 < str.length()) {
-                
+                char strSlice[4];
+                memcpy(strSlice, str.data() + i * sizeof(char), sizeof(char) * 4);
+                if (strcasecmp(strSlice, "true") == 0) {
+                    Elem _pushVal;
+                    _pushVal.isOp = false;
+                    if (digitBufferModifier == -1) {
+                        _pushVal.data.value = 0;
+                    }
+                    else {
+                        _pushVal.data.value = 1;
+                    }
+                    digitBufferModifier = 1;
+                    result.push(_pushVal);
+                    i += 3;
+                    continue;
+                }
             }
             if (i + 1 < str.length()) {
                 if (str[i] == '<' && str[i + 1] == '=') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_LESS_EQUAL;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_LESS_EQUAL;
+                    op = lcl::SYMS::SYM_OP_LESS_EQUAL;
                     i++;
-                    continue;
                 }
                 if (str[i] == '>' && str[i + 1] == '=') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    op = lcl::SYMS::SYM_OP_MORE_EQUAL;
                     i++;
-                    continue;
                 }
                 if (str[i] == '=' && str[i + 1] == '=') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_EQUAL;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_EQUAL;
+                    op = lcl::SYMS::SYM_OP_EQUAL;
                     i++;
-                    continue;
                 }
                 if (str[i] == '!' && str[i + 1] == '=') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_EQUAL;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_EQUAL;
+                    op = lcl::SYMS::SYM_OP_NOT_EQUAL;
                     i++;
-                    continue;
                 }
                 if (str[i] == '&' && str[i + 1] == '&') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_AND;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_AND;
+                    op = lcl::SYMS::SYM_OP_AND;
                     i++;
-                    continue;
                 }
                 if (str[i] == '|' && str[i + 1] == '|') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_OR;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_OR;
+                    op = lcl::SYMS::SYM_OP_OR;
                     i++;
-                    continue;
                 }
                 if (str[i] == '-' && str[i + 1] == '>') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_IMPLICATION;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_IMPLICATION;
+                    op = lcl::SYMS::SYM_OP_IMPLICATION;
                     i++;
-                    continue;
                 }
             }
-            if (str[i] == 'T') {
-                Elem _pushVal{false};
-                _pushVal.data.value = 1;
+            if (str[i] == 'T' || str[i] == 't') {
+                Elem _pushVal;
+                _pushVal.isOp = false;
+                if (digitBufferModifier == -1) {
+                    _pushVal.data.value = 0;
+                }
+                else {
+                    _pushVal.data.value = 1;
+                }
                 digitBufferModifier = 1;
                 result.push(_pushVal);
+                continue;
             }
-            else if (str[i] == 'F') {
-                Elem _pushVal{false};
+            else if (str[i] == 'F' || str[i] == 'f') {
+                Elem _pushVal;
+                _pushVal.isOp = false;
                 _pushVal.data.value = 0;
+                if (digitBufferModifier == -1) {
+                    _pushVal.data.value = 1;
+                }
+                else {
+                    _pushVal.data.value = 0;
+                }
                 digitBufferModifier = 1;
                 result.push(_pushVal);
+                continue;
             }
             else if (str[i] == '<') {
-                pushVal.data.op = lcl::SYMS::SYM_OP_LESS;
+                // pushVal.data.op = lcl::SYMS::SYM_OP_LESS;
+                op = lcl::SYMS::SYM_OP_LESS;
             }
-            else if (str[i] == '>') {
-                pushVal.data.op = lcl::SYMS::SYM_OP_MORE;
+            else if (str[i] == '>' && !op.has_value()) {
+                // pushVal.data.op = lcl::SYMS::SYM_OP_MORE;
+                op = lcl::SYMS::SYM_OP_MORE;
             }
-            opStack.push(pushVal);
+            else if (str[i] == '^') {
+                // pushVal.data.op = lcl::SYMS::SYM_OP_XOR;
+                op = lcl::SYMS::SYM_OP_XOR;
+            }
+            else if (str[i] == '!') {
+                // pushVal.data.op = lcl::SYMS::SYM_OP_XOR;
+                op = lcl::SYMS::SYM_OP_NOT;
+            }
+            else if (str[i] == '(') {
+                // pushVal.data.op = lcl::SYMS::SYM_OP_XOR;
+                op = lcl::SYMS::SYM_BRACKET_OPEN;
+            }
+            else if (str[i] == ')') {
+                // pushVal.data.op = lcl::SYMS::SYM_OP_XOR;
+                // op = lcl::SYMS::SYM_BRACKET_CLOSE;
+                while (opStack.getTop().data.op != '(') {
+                    result.push(opStack.pop());
+                }
+                opStack.pop();
+            }
+            if (op.has_value()) {
+                pushVal.data.op = op.value();
+                while (!opStack.isEmpty() && (OP_PRIORITIES[opStack.getTop().data.op] > OP_PRIORITIES[op.value()])) {
+                    result.push(opStack.pop());
+                }
+                opStack.push(pushVal);
+            }
         }
     }
 
     if (digitBuffer.has_value()) {
-        Elem pushVal{false};
+        Elem pushVal;
+        pushVal.isOp = false;
         pushVal.data.value = digitBuffer.value() * digitBufferModifier;
         result.push(pushVal);
     }
 
+    while (!opStack.isEmpty()) {
+        result.push(opStack.pop());
+    }
+
     return result;
+}
+
+int lcl::calculatePostfix(Teto::TetoStack& stack) {
+    if (!stack.getTop().isOp) {
+        return stack.pop().data.value;
+    }
+    unsigned char op = stack.pop().data.op;
+    int left, right;
+
+    if (op == lcl::SYMS::SYM_OP_NOT) {
+        if (stack.getTop().isOp) {
+            left = calculatePostfix(stack);
+        }
+        else {
+            left = stack.pop().data.value;
+        }
+        return !static_cast<bool>(left);
+    }
+    else {
+        if (stack.getTop().isOp) {
+            right = calculatePostfix(stack);
+        }
+        else {
+            right = stack.pop().data.value;
+        }
+        if (stack.getTop().isOp) {
+            left = calculatePostfix(stack);
+        }
+        else {
+            left = stack.pop().data.value;
+        }
+
+        if (op == lcl::SYMS::SYM_OP_LESS) {
+            return left < right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_LESS_EQUAL) {
+            return left <= right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_MORE) {
+            return left > right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_MORE_EQUAL) {
+            return left >= right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_EQUAL) {
+            return left == right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_NOT_EQUAL) {
+            return left != right;
+        }
+        else if (op == lcl::SYMS::SYM_OP_AND) {
+            return static_cast<bool>(left) && static_cast<bool>(right);
+        }
+        else if (op == lcl::SYMS::SYM_OP_OR) {
+            return static_cast<bool>(left) || static_cast<bool>(right);
+        }
+        else if (op == lcl::SYMS::SYM_OP_XOR) {
+            return static_cast<bool>(left) != static_cast<bool>(right);
+        }
+        else if (op == lcl::SYMS::SYM_OP_IMPLICATION) {
+            return !static_cast<bool>(left) || static_cast<bool>(right);
+        }
+    }
+    return 0;
+}
+
+void lcl::checkString(std::string str) {
+    int bracketVal = 0;
+    std::vector<std::size_t> bracketOpenings;
+    for (std::size_t i = 0;i < str.length();i++) {
+        if (str[i] == '(') {
+            bracketVal++;
+            bracketOpenings.push_back(i);
+        }
+        if (str[i] == ')') {
+            bracketVal--;
+            bracketOpenings.pop_back();
+        }
+        if (bracketVal < 0) {
+            printErrorMsg("Stray bracket!");
+            printErrorPlace(str, i);
+            throw std::runtime_error("");
+        }
+    }
+    if (bracketVal != 0) {
+        printErrorMsg(std::to_string(bracketVal) + " bracket(s) were unclosed!");
+        printErrorPlace(str, bracketOpenings);
+        throw std::runtime_error("");
+    }
+
+    
 }
 
 void lcl::populateOpPriorities(char* priorities) {
