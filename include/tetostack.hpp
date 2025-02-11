@@ -1,28 +1,35 @@
 #pragma once
 
-#include <logiccalclib.hpp>
+// #include <logiccalclib.hpp>
 
 #include <iostream>
 
 #define TETO_DEFAULT_STACK_SIZE 10000
 
 namespace Teto {
-    template<typename T>
+    struct TetoElement {
+        bool isOp;
+        union {
+            unsigned char op;
+            int value;
+        } data;
+    };
+
     class TetoStack {
     private:
-        T* pData;
+        TetoElement* pData;
         std::size_t size;
         std::size_t index = 0;
     public:
         TetoStack();
         TetoStack(std::size_t stack_size);
         ~TetoStack();
-        T pop();
-        T getTop();
-        void push(T value);
+        TetoElement pop();
+        TetoElement getTop();
+        void push(TetoElement value);
         bool isEmpty();
         std::size_t getSize();
         std::size_t getElementCount();
-        T* data();
+        TetoElement* data();
     };
 };

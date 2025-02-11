@@ -9,7 +9,7 @@ logiccalc: logiccalc.cpp $(SOURCES)
 .PHONY: test test_ops test_wrong_input clean
 
 test: logiccalc
-	./logiccalc "!(6<=5)"
+	./logiccalc "!  (T ==6)"
 
 test_wrong_input: logiccalc
 	./logiccalc "((1)"

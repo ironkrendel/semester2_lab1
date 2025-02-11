@@ -1,68 +1,59 @@
 #include <tetostack.hpp>
+#include <colors.hpp>
 
-template<>
-Teto::TetoStack<int>::TetoStack() {
+Teto::TetoStack::TetoStack() {
     size = TETO_DEFAULT_STACK_SIZE;
-    pData = new int[TETO_DEFAULT_STACK_SIZE];
+    pData = new Teto::TetoElement[TETO_DEFAULT_STACK_SIZE];
 }
 
-template<>
-Teto::TetoStack<int>::TetoStack(std::size_t _size) {
+Teto::TetoStack::TetoStack(std::size_t _size) {
     size = _size;
-    pData = new int[_size];
+    pData = new Teto::TetoElement[_size];
 }
 
-template<>
-Teto::TetoStack<int>::~TetoStack() {
+Teto::TetoStack::~TetoStack() {
     delete[] pData;
 }
 
-template<>
-int Teto::TetoStack<int>::pop() {
+Teto::TetoElement Teto::TetoStack::pop() {
     if (index <= 0) {
-        lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! Pop called for empty stack!" ANSI_COLOR_RESET);
+        std::cout << ANSI_COLOR_BRIGHT_RED "TetoStack Error! Pop called for empty stack!" ANSI_COLOR_RESET << std::endl;
         // exit(1);
         throw std::runtime_error("");
     }
     return pData[--index];
 }
 
-template<>
-int Teto::TetoStack<int>::getTop() {
+Teto::TetoElement Teto::TetoStack::getTop() {
     if (index <= 0) {
-        lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! GetTop called for empty stack!" ANSI_COLOR_RESET);
+        std::cout << ANSI_COLOR_BRIGHT_RED "TetoStack Error! GetTop called for empty stack!" ANSI_COLOR_RESET << std::endl;
         // exit(1);
         throw std::runtime_error("");
     }
     return pData[index - 1];
 }
 
-template<>
-void Teto::TetoStack<int>::push(int value) {
+void Teto::TetoStack::push(TetoElement value) {
     if (index >= size) {
-        lcl::printErrorMsg(ANSI_COLOR_BRIGHT_RED "TetoStack Error! Stack overflow!" ANSI_COLOR_RESET);
+        std::cout << ANSI_COLOR_BRIGHT_RED "TetoStack Error! Stack overflow!" ANSI_COLOR_RESET << std::endl;
         // exit(1);
         throw std::runtime_error("");
     }
     pData[index++] = value;
 }
 
-template<>
-bool Teto::TetoStack<int>::isEmpty() {
+bool Teto::TetoStack::isEmpty() {
     return index == 0;
 }
 
-template<>
-std::size_t Teto::TetoStack<int>::getSize() {
+std::size_t Teto::TetoStack::getSize() {
     return size;
 }
 
-template<>
-std::size_t Teto::TetoStack<int>::getElementCount() {
+std::size_t Teto::TetoStack::getElementCount() {
     return index;
 }
 
-template<>
-int* Teto::TetoStack<int>::data() {
+Teto::TetoElement* Teto::TetoStack::data() {
     return pData;
 }

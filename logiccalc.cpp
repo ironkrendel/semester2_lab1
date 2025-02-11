@@ -3,8 +3,6 @@
 
 #include <iostream>
 
-Teto::TetoStack<int> stack;
-
 int main(int argc, char** argv) {
     if (argc <= 1) {
         printf("Help message\n");
@@ -19,28 +17,29 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            std::string str = lcl::prepareString(argv[i]);
+            std::string str = argv[i];
 
             std::cout << str << std::endl;
 
-            lcl::checkString(str);
+            Teto::TetoStack postfix = lcl::convertToPostfix(str);
 
-            str = lcl::padOperators(str);
-
-            std::cout << str << std::endl;
-
-            str = lcl::convertToPostfix(str);
-
-            std::cout << str << std::endl;
-
-            bool result = lcl::calculatePostfix(str);
-
-            if (result) {
-                std::cout << ANSI_COLOR_BRIGHT_GREEN << "true" << ANSI_COLOR_RESET << std::endl;
+            // std::cout << " " << postfix.getElementCount() << std::endl;
+            while (!postfix.isEmpty()) {
+                Teto::TetoElement elem = postfix.pop();
+                if (elem.isOp) {
+                    std::cout << elem.data.op << std::endl;
+                }
+                else {
+                    std::cout << elem.data.value << std::endl;
+                }
             }
-            else {
-                std::cout << ANSI_COLOR_RED << "false" << ANSI_COLOR_RESET << std::endl;
-            }
+
+            // if (result) {
+            //     std::cout << ANSI_COLOR_BRIGHT_GREEN << "true" << ANSI_COLOR_RESET << std::endl;
+            // }
+            // else {
+            //     std::cout << ANSI_COLOR_RED << "false" << ANSI_COLOR_RESET << std::endl;
+            // }
         }
         catch (std::exception& e) {
             continue;
