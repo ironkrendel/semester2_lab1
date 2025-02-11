@@ -174,8 +174,8 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
                     i++;
                 }
                 if (str[i] == '>' && str[i + 1] == '=') {
-                    pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
-                    // op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    // pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    op = lcl::SYMS::SYM_OP_MORE_EQUAL;
                     i++;
                 }
                 if (str[i] == '=' && str[i + 1] == '=') {
@@ -430,7 +430,7 @@ void lcl::checkString(std::string str) {
             }
         }
         else if (state == 2) {
-            if (isdigit(str[i])) {
+            if (isdigit(str[i]) || str[i] == '>') {
                 state = 0;
             }
             else {
