@@ -95,7 +95,3 @@ Teto::TetoStack& Teto::TetoStack::operator=(const Teto::TetoStack& src) noexcept
     // std::cout << pData[0].data.value << std::endl;
     return *this;
 }
-
-Teto::TetoStack& Teto::TetoStack::operator=(Teto::TetoStack&& src) noexcept {
-    return *this;
-}

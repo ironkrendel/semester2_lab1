@@ -27,7 +27,7 @@ void lcl::printErrorPlace(std::string message, std::vector<std::size_t> offsets)
     std::cout << std::endl;
     std::cout << message << std::endl;
     
-    int index = 0;
+    std::size_t index = 0;
     for (std::size_t i = 0;i < message.size() && index < offsets.size();i++) {
         if (i == offsets[index]) {
             std::cout << ANSI_COLOR_RED "^" ANSI_COLOR_RESET;
@@ -273,68 +273,72 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
     return result;
 }
 
-int lcl::calculatePostfix(Teto::TetoStack& stack) {
-    if (!stack.getTop().isOp) {
-        return stack.pop().data.value;
-    }
-    unsigned char op = stack.pop().data.op;
-    int left, right;
+int lcl::calculatePostfix(Teto::TetoStack& postfix) {
+    Teto::TetoStack reversedPostfix;
+    Teto::TetoStack result;
 
-    if (op == lcl::SYMS::SYM_OP_NOT) {
-        if (stack.getTop().isOp) {
-            left = calculatePostfix(stack);
-        }
-        else {
-            left = stack.pop().data.value;
-        }
-        return !static_cast<bool>(left);
+    while (!postfix.isEmpty()) {
+        reversedPostfix.push(postfix.pop());
     }
-    else {
-        if (stack.getTop().isOp) {
-            right = calculatePostfix(stack);
-        }
-        else {
-            right = stack.pop().data.value;
-        }
-        if (stack.getTop().isOp) {
-            left = calculatePostfix(stack);
-        }
-        else {
-            left = stack.pop().data.value;
-        }
 
-        if (op == lcl::SYMS::SYM_OP_LESS) {
-            return left < right;
+    while (!reversedPostfix.isEmpty()) {
+        Elem e = reversedPostfix.pop();
+        if (e.isOp) {
+            unsigned char op = e.data.op;
+
+            if (op == lcl::SYMS::SYM_OP_NOT) {
+                Elem pushVal;
+                pushVal.isOp = false;
+                pushVal.data.value = !static_cast<bool>(result.pop().data.value);
+                result.push(pushVal);
+            }
+            else {
+                int right = result.pop().data.value;
+                int left = result.pop().data.value;
+
+                Elem pushVal;
+                pushVal.isOp = false;
+
+                if (op == lcl::SYMS::SYM_OP_LESS) {
+                    pushVal.data.value = static_cast<int>(left < right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_LESS_EQUAL) {
+                    pushVal.data.value = static_cast<int>(left <= right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_MORE) {
+                    pushVal.data.value = static_cast<int>(left > right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_MORE_EQUAL) {
+                    pushVal.data.value = static_cast<int>(left >= right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_EQUAL) {
+                    pushVal.data.value = static_cast<int>(left == right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_NOT_EQUAL) {
+                    pushVal.data.value = static_cast<int>(left != right);
+                }
+                else if (op == lcl::SYMS::SYM_OP_AND) {
+                    pushVal.data.value = static_cast<int>(static_cast<bool>(left) && static_cast<bool>(right));
+                }
+                else if (op == lcl::SYMS::SYM_OP_OR) {
+                    pushVal.data.value = static_cast<int>(static_cast<bool>(left) || static_cast<bool>(right));
+                }
+                else if (op == lcl::SYMS::SYM_OP_XOR) {
+                    pushVal.data.value = static_cast<int>(static_cast<bool>(left) != static_cast<bool>(right));
+                }
+                else if (op == lcl::SYMS::SYM_OP_IMPLICATION) {
+                    pushVal.data.value = static_cast<int>(!static_cast<bool>(left) || static_cast<bool>(right));
+                }
+
+                result.push(pushVal);
+            }
         }
-        else if (op == lcl::SYMS::SYM_OP_LESS_EQUAL) {
-            return left <= right;
-        }
-        else if (op == lcl::SYMS::SYM_OP_MORE) {
-            return left > right;
-        }
-        else if (op == lcl::SYMS::SYM_OP_MORE_EQUAL) {
-            return left >= right;
-        }
-        else if (op == lcl::SYMS::SYM_OP_EQUAL) {
-            return left == right;
-        }
-        else if (op == lcl::SYMS::SYM_OP_NOT_EQUAL) {
-            return left != right;
-        }
-        else if (op == lcl::SYMS::SYM_OP_AND) {
-            return static_cast<bool>(left) && static_cast<bool>(right);
-        }
-        else if (op == lcl::SYMS::SYM_OP_OR) {
-            return static_cast<bool>(left) || static_cast<bool>(right);
-        }
-        else if (op == lcl::SYMS::SYM_OP_XOR) {
-            return static_cast<bool>(left) != static_cast<bool>(right);
-        }
-        else if (op == lcl::SYMS::SYM_OP_IMPLICATION) {
-            return !static_cast<bool>(left) || static_cast<bool>(right);
+        else {
+            result.push(e);
         }
     }
-    return 0;
+
+    return result.pop().data.value;
 }
 
 void lcl::checkString(std::string str) {
@@ -360,8 +364,6 @@ void lcl::checkString(std::string str) {
         printErrorPlace(str, bracketOpenings);
         throw std::runtime_error("");
     }
-
-
 }
 
 void lcl::populateOpPriorities(char* priorities) {

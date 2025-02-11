@@ -23,17 +23,17 @@ int main(int argc, char** argv) {
 
             Teto::TetoStack postfix = lcl::convertToPostfix(str);
 
-            Teto::TetoStack copy = postfix;
+            // Teto::TetoStack copy = postfix;
 
-            while (!copy.isEmpty()) {
-                if (copy.getTop().isOp) {
-                    std::cout << copy.pop().data.op << " ";
-                }
-                else {
-                    std::cout << copy.pop().data.value << " ";
-                }
-            }
-            std::cout << std::endl;
+            // while (!copy.isEmpty()) {
+            //     if (copy.getTop().isOp) {
+            //         std::cout << copy.pop().data.op << " ";
+            //     }
+            //     else {
+            //         std::cout << copy.pop().data.value << " ";
+            //     }
+            // }
+            // std::cout << std::endl;
 
             int result = lcl::calculatePostfix(postfix);
 

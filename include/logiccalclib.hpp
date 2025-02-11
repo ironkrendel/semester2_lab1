@@ -66,7 +66,7 @@ namespace lcl {
 
     Teto::TetoStack convertToPostfix(std::string str);
 
-    int calculatePostfix(Teto::TetoStack& stack);
+    int calculatePostfix(Teto::TetoStack& postfix);
 
     void checkString(std::string str);
 
