@@ -10,6 +10,10 @@ logiccalc: logiccalc.cpp $(SOURCES)
 
 test: logiccalc
 	./logiccalc "!((1 > 2)->(1 > 3))" "!((2 > 2)->(2 > 3))" "!((3 > 2)->(3 > 3))" "!((4 > 2)->(4 > 3))"
+	./logiccalc "(0 || 1) && (0 || 1) && ! 1 && ! 1" "(1 || 0) && (1 || 0) && ! 0 && ! 0"
+	# "(a-> b && !c) && (c-> b && a) && (b-> c && a)" == "!a && !b && !c"
+	./logiccalc "(1-> 1 && !1) && (1-> 1 && 1) && (1-> 1 && 1)" "(1-> 1 && !0) && (0-> 1 && 1) && (1-> 0 && 1)" "(1-> 0 && !1) && (1-> 0 && 1) && (0-> 1 && 1)" "(0-> 1 && !1) && (1-> 1 && 0) && (1-> 1 && 0)" "(0-> 0 && !0) && (0-> 0 && 0) && (0-> 0 && 0)"
+	./logiccalc "!1 && !1 && !1" "!1 && !1 && !0" "!1 && !0 && !1" "!0 && !1 && !1" "!0 && !0 && !0"
 
 test_wrong_input: logiccalc
 	./logiccalc "((((1)"
@@ -21,8 +25,9 @@ test_wrong_input: logiccalc
 	./logiccalc "(55 < 55) <= 55 ||"
 	./logiccalc "5 < < 6"
 	./logiccalc "5 < || 6"
-	./logiccalc "5 !"
-	./logiccalc "0 || ! 0"
+	./logiccalc "0 < 1 0"
+	./logiccalc "0 || 1 !"
+	./logiccalc "0 || 1 -"
 
 test_ops: logiccalc
 	./logiccalc "0"

@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv) {
     if (argc <= 1) {
-        printf("Help message\n");
+        lcl::printErrorMsg("No arguments passed! Exiting.");
 
         return 0;
     }

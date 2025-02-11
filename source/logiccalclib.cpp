@@ -367,6 +367,11 @@ int lcl::calculatePostfix(Teto::TetoStack& postfix) {
             result.push(e);
         }
     }
+    
+    if (result.getElementCount() != 1) {
+        printErrorMsg("Spare number in input!");
+        throw std::runtime_error("");
+    }
 
     return result.pop().data.value;
 }
@@ -392,6 +397,54 @@ void lcl::checkString(std::string str) {
     if (bracketVal != 0) {
         printErrorMsg(std::to_string(bracketVal) + " bracket(s) was(were) unclosed!");
         printErrorPlace(str, bracketOpenings);
+        throw std::runtime_error("");
+    }
+
+    int state = 0;
+    for (std::size_t i = 0;i < str.length();i++) {
+        if (state == 0) {
+            if (str[i] == '!') state = 1;
+            if (str[i] == '-') state = 2;
+        }
+        else if (state == 1) {
+            if (isdigit(str[i])) {
+                state = 0;
+            }
+            else if (str[i] == ' ') {
+                continue;
+            }
+            else if (str[i] == '-') {
+                if (i + 1 < str.length()) {
+                    if (isdigit(str[i + 1])) {
+                        state = 0;
+                    }
+                    else {
+                        lcl::printErrorMsg("Not operation without a value!");
+                        throw std::runtime_error("");
+                    }
+                }
+                else {
+                    lcl::printErrorMsg("Minus without a number!");
+                    throw std::runtime_error("");
+                }
+            }
+        }
+        else if (state == 2) {
+            if (isdigit(str[i])) {
+                state = 0;
+            }
+            else {
+                lcl::printErrorMsg("Minus without a number!");
+                throw std::runtime_error("");
+            }
+        }
+    }
+    if (state == 1) {
+        lcl::printErrorMsg("Not operation without a value!");
+        throw std::runtime_error("");
+    }
+    if (state == 2) {
+        lcl::printErrorMsg("Minus without a number!");
         throw std::runtime_error("");
     }
 }
