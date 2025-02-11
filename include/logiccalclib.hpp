@@ -9,6 +9,7 @@
 
 #include <tetostack.hpp>
 #include <colors.hpp>
+#include <lcldebugdefines.hpp>
 
 namespace lcl {
     namespace SYMS {
@@ -70,7 +71,7 @@ namespace lcl {
 
     void checkString(std::string str);
 
-    void populateOpPriorities(char* priorities);
+    void populateOpPriorities(int* priorities);
 };
 // #define SYM_TRUE           'T'
 // #define SYM_FALSE          'F'

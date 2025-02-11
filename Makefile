@@ -9,14 +9,16 @@ logiccalc: logiccalc.cpp $(SOURCES)
 .PHONY: test test_ops test_wrong_input clean
 
 test: logiccalc
-	./logiccalc "54 < 55 < 56"
+	./logiccalc "!((1 > 2)->(1 > 3))" "!((2 > 2)->(2 > 3))" "!((3 > 2)->(3 > 3))" "!((4 > 2)->(4 > 3))"
 
 test_wrong_input: logiccalc
 	./logiccalc "((((1)"
 	./logiccalc "(1))"
 	./logiccalc "<55"
 	./logiccalc "55<"
-	./logiccalc "55 < 55 < 55"
+	./logiccalc "55 < 55 ||"
+	./logiccalc "(55 < 55) || "
+	./logiccalc "(55 < 55) <= 55 ||"
 	./logiccalc "5 < < 6"
 	./logiccalc "5 < || 6"
 	./logiccalc "5 !"

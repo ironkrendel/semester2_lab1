@@ -2,6 +2,8 @@
 
 #include <logiccalclib.hpp>
 
+// #define DEBUG
+
 typedef Teto::TetoElement Elem;
 
 void lcl::printErrorMsg(std::string msg) {
@@ -88,13 +90,17 @@ unsigned char lcl::symIdToChar(unsigned char id) {
 
 Teto::TetoStack lcl::convertToPostfix(std::string str) {
     Teto::TetoStack opStack;
-    Teto::TetoStack result(2000);
+    Teto::TetoStack result;
     std::optional<int> digitBuffer;
     int digitBufferModifier = 1;
-    char OP_PRIORITIES[125];
+    int OP_PRIORITIES[1000];
     populateOpPriorities(OP_PRIORITIES);
 
     for (std::size_t i = 0;i < str.length();i++) {
+        #ifdef DEBUG
+        DEBUG_CONVERSION_STACK_PRINT(result, opStack);
+        #endif
+
         if (str[i] == '-' && str[i + 1] != '>') {
             digitBufferModifier = -1;
         }
@@ -116,6 +122,10 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
                 digitBuffer.reset();
                 result.push(pushVal);
             }
+
+            #ifdef DEBUG
+            DEBUG_CONVERSION_STACK_PRINT(result, opStack);
+            #endif
             
             Elem pushVal;
             pushVal.isOp = true;
@@ -164,8 +174,8 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
                     i++;
                 }
                 if (str[i] == '>' && str[i + 1] == '=') {
-                    // pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
-                    op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    pushVal.data.op = lcl::SYMS::SYM_OP_MORE_EQUAL;
+                    // op = lcl::SYMS::SYM_OP_MORE_EQUAL;
                     i++;
                 }
                 if (str[i] == '=' && str[i + 1] == '=') {
@@ -252,6 +262,11 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
             if (op.has_value()) {
                 pushVal.data.op = op.value();
                 while (!opStack.isEmpty() && (OP_PRIORITIES[opStack.getTop().data.op] > OP_PRIORITIES[op.value()])) {
+                    if (op == lcl::SYMS::SYM_BRACKET_OPEN) break;
+                    #ifdef DEBUG
+                        std::cout << opStack.getTop().data.op << " " << op.value() << std::endl;
+                        std::cout << OP_PRIORITIES[opStack.getTop().data.op] << " " << OP_PRIORITIES[op.value()] << std::endl;
+                    #endif
                     result.push(opStack.pop());
                 }
                 opStack.push(pushVal);
@@ -270,12 +285,18 @@ Teto::TetoStack lcl::convertToPostfix(std::string str) {
         result.push(opStack.pop());
     }
 
+    #ifdef DEBUG
+    DEBUG_CONVERSION_STACK_PRINT(result, opStack);
+    #endif
+
     return result;
 }
 
 int lcl::calculatePostfix(Teto::TetoStack& postfix) {
     Teto::TetoStack reversedPostfix;
     Teto::TetoStack result;
+
+    std::size_t index = 0;
 
     while (!postfix.isEmpty()) {
         reversedPostfix.push(postfix.pop());
@@ -284,6 +305,7 @@ int lcl::calculatePostfix(Teto::TetoStack& postfix) {
     while (!reversedPostfix.isEmpty()) {
         Elem e = reversedPostfix.pop();
         if (e.isOp) {
+            index+=2;
             unsigned char op = e.data.op;
 
             if (op == lcl::SYMS::SYM_OP_NOT) {
@@ -293,6 +315,13 @@ int lcl::calculatePostfix(Teto::TetoStack& postfix) {
                 result.push(pushVal);
             }
             else {
+                if (result.getElementCount() < 2) {
+                    // for (std::size_t _ = 0;_ < index - 2;_++) std::cout << ' ';
+                    // std::cout << ANSI_COLOR_RED "^" ANSI_COLOR_RESET << std::endl;
+                    printErrorMsg("Error! Not enough arguments were provided for given operation!");
+                    throw std::runtime_error("");
+                }
+
                 int right = result.pop().data.value;
                 int left = result.pop().data.value;
 
@@ -334,6 +363,7 @@ int lcl::calculatePostfix(Teto::TetoStack& postfix) {
             }
         }
         else {
+            index += std::to_string(e.data.value).length() + 1;
             result.push(e);
         }
     }
@@ -366,16 +396,17 @@ void lcl::checkString(std::string str) {
     }
 }
 
-void lcl::populateOpPriorities(char* priorities) {
-    priorities[lcl::SYMS_ID::SYM_OP_LESS] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_LESS_EQUAL] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_MORE] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_MORE_EQUAL] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_EQUAL] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_NOT_EQUAL] = 11;
-    priorities[lcl::SYMS_ID::SYM_OP_AND] = 9;
-    priorities[lcl::SYMS_ID::SYM_OP_OR] = 8;
-    priorities[lcl::SYMS_ID::SYM_OP_XOR] = 8;
-    priorities[lcl::SYMS_ID::SYM_OP_NOT] = 10;
-    priorities[lcl::SYMS_ID::SYM_OP_IMPLICATION] = 7;
+void lcl::populateOpPriorities(int* priorities) {
+    priorities[lcl::SYMS::SYM_OP_LESS] = 11;
+    priorities[lcl::SYMS::SYM_OP_LESS_EQUAL] = 11;
+    priorities[lcl::SYMS::SYM_OP_MORE] = 11;
+    priorities[lcl::SYMS::SYM_OP_MORE_EQUAL] = 11;
+    priorities[lcl::SYMS::SYM_OP_EQUAL] = 11;
+    priorities[lcl::SYMS::SYM_OP_NOT_EQUAL] = 11;
+    priorities[lcl::SYMS::SYM_OP_AND] = 9;
+    priorities[lcl::SYMS::SYM_OP_OR] = 8;
+    priorities[lcl::SYMS::SYM_OP_XOR] = 8;
+    priorities[lcl::SYMS::SYM_OP_NOT] = 12;
+    priorities[lcl::SYMS::SYM_OP_IMPLICATION] = 7;
+    priorities[lcl::SYMS::SYM_BRACKET_OPEN] = 0;
 }

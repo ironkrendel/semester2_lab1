@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+// #define DEBUG
+
 int main(int argc, char** argv) {
     if (argc <= 1) {
         printf("Help message\n");
@@ -23,17 +25,24 @@ int main(int argc, char** argv) {
 
             Teto::TetoStack postfix = lcl::convertToPostfix(str);
 
-            // Teto::TetoStack copy = postfix;
+            #ifdef DEBUG
+                Teto::TetoStack copy = postfix;
+                Teto::TetoStack reversedCopy;
 
-            // while (!copy.isEmpty()) {
-            //     if (copy.getTop().isOp) {
-            //         std::cout << copy.pop().data.op << " ";
-            //     }
-            //     else {
-            //         std::cout << copy.pop().data.value << " ";
-            //     }
-            // }
-            // std::cout << std::endl;
+                while (!copy.isEmpty()) {
+                    reversedCopy.push(copy.pop());
+                }
+
+                while (!reversedCopy.isEmpty()) {
+                    if (reversedCopy.getTop().isOp) {
+                        std::cout << reversedCopy.pop().data.op << " ";
+                    }
+                    else {
+                        std::cout << reversedCopy.pop().data.value << " ";
+                    }
+                }
+                std::cout << std::endl;
+            #endif
 
             int result = lcl::calculatePostfix(postfix);
 
