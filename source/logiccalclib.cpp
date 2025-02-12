@@ -407,7 +407,7 @@ void lcl::checkString(std::string str) {
             if (str[i] == '-') state = 2;
         }
         else if (state == 1) {
-            if (isdigit(str[i])) {
+            if (isdigit(str[i]) || str[i] == '(') {
                 state = 0;
             }
             else if (str[i] == ' ') {
